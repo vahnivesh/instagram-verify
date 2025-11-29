@@ -226,45 +226,34 @@ def scrape_instagram_bio(username):
         print("❌ ERROR: No responseId")
         return None
 
-    # STEP 2 — Poll for result
-    while True:
-        time.sleep(3)
+    # STEP 2 — Single poll, no blocking, no sleep
+    poll_url = (
+        f"http://api.scraping-bot.io/scrape/data-scraper-response?"
+        f"scraper=instagramProfile&responseId={response_id}"
+    )
+    
+    rr = requests.get(poll_url, auth=(SCRAPINGBOT_USERNAME, SCRAPINGBOT_APIKEY))
+    raw = rr.json()
+    
+    print("POLL RESULT:", raw)
+    
+    # A) Anti-flood or incomplete → tell caller to poll again
+    if isinstance(raw, dict) and raw.get("status") == "pending":
+        return {"pending": True}
+    
+    # B) Final response returns a LIST → finished
+    if isinstance(raw, list) and len(raw) > 0:
+        final_obj = raw[0]
+        bio = final_obj.get("biography")
+        return {"pending": False, "bio": bio}
+    
+    # C) Direct dictionary response with biography (rare)
+    if isinstance(raw, dict) and "biography" in raw:
+        return {"pending": False, "bio": raw["biography"]}
+    
+    # Unknown response
+    return {"pending": False, "bio": None}
 
-        poll_url = (
-            f"http://api.scraping-bot.io/scrape/data-scraper-response?"
-            f"scraper=instagramProfile&responseId={response_id}"
-        )
-
-        rr = requests.get(poll_url, auth=(SCRAPINGBOT_USERNAME, SCRAPINGBOT_APIKEY))
-        raw = rr.json()
-
-        print("POLL:", raw)
-
-        # A) If anti flood
-        if isinstance(raw, dict) and raw.get("error"):
-            print("WAITING (anti-flood)...")
-            time.sleep(2)
-            continue
-
-        # B) If final response is a LIST → this IS finished
-        if isinstance(raw, list) and len(raw) > 0:
-            final_obj = raw[0]
-            bio = final_obj.get("biography")
-            print("BIO FOUND (LIST):", bio)
-            return bio
-
-        # C) If pending
-        if raw.get("status") == "pending":
-            continue
-
-        # D) If direct profile dict response (rare case)
-        if "biography" in raw:
-            print("BIO FOUND (DIRECT):", raw["biography"])
-            return raw["biography"]
-
-        # Unknown
-        print("❓ UNKNOWN RESPONSE:", raw)
-        return None
 
 
 # =========================================
@@ -388,6 +377,7 @@ def api_check_instagram():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
