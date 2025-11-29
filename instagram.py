@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template_string, redirect, url_for, jsonify, make_response
 import secrets, time, requests, json
 from flask_cors import CORS
+import os
 
 
 
@@ -12,8 +13,8 @@ CORS(app)
 # SCRAPINGBOT API KEYS (PUT YOURS HERE)
 # =========================================
 
-SCRAPINGBOT_USERNAME = "vahnivesh"
-SCRAPINGBOT_APIKEY = "TXILrvS7bEYhudFdrTmxoOWl4"
+SCRAPINGBOT_USERNAME = os.environ.get("SCRAPINGBOT_USERNAME")
+SCRAPINGBOT_APIKEY = os.environ.get("SCRAPINGBOT_APIKEY")
 
 SCRAPINGBOT_ENDPOINT = "http://api.scraping-bot.io/scrape/data-scraper"
 
@@ -375,5 +376,6 @@ def api_check_instagram():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
