@@ -1,11 +1,12 @@
 from flask import Flask, request, render_template_string, redirect, url_for, jsonify, make_response
 import secrets, time, requests, json
 from flask_cors import CORS
-CORS(app)
+
 
 
 
 app = Flask(__name__)
+CORS(app)
 
 # =========================================
 # SCRAPINGBOT API KEYS (PUT YOURS HERE)
@@ -374,4 +375,5 @@ def api_check_instagram():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
